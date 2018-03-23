@@ -43,5 +43,6 @@
 
   )
 
-(defn -main [[config-p]]
-  (run config-p))
+(defn -main [& [config-p]]
+  (run config-p)
+  (System/exit 0))
