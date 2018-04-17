@@ -1,5 +1,6 @@
 (ns khie.core
   (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.java.shell :as shell]
             [clojure.string :as string]
             [com.rpl.specter :as s]))
@@ -12,7 +13,8 @@
                #(string/replace % "$HOME" home-path)
                config))
 
-(defn create-marks [mark-path mappings]
+(defn update-marks [mark-path mappings]
+  (doseq [f (.listFiles (io/as-file mark-path))] (.delete f)) 
   (doseq [[mark path] mappings]
     (shell/sh "bash" "-c" (format "ln -s %s %s/%s"
                                   path mark-path (name mark)))))
@@ -29,7 +31,7 @@
                     slurp 
                     edn/read-string 
                     (subst-home (System/getenv "HOME")))]
-    (create-marks (::config/mark-path config) (::config/dir-mappings config))
+    (update-marks (::config/mark-path config) (::config/dir-mappings config))
     (doseq [{:keys [::config/path ::config/format]} (::config/emit-specs config)]
       (spit path 
             (str (format-shortcuts format "F" (::config/file-mappings config))
